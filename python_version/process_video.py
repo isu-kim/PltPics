@@ -137,7 +137,6 @@ def t_generate_pictures(tmp_dir, frame_dir, thread_count):
 
     for t in thread_list:
         t.join()
-    pass
 
 
 def generate_pictures(tmp_dir, frame_dir):

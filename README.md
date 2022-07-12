@@ -1,5 +1,3 @@
-
-
 # PltPics
 A simple script that draws picture into `matplotlib.pyplot` using bezier curves.
 
@@ -13,7 +11,6 @@ kevinjycui for https://github.com/kevinjycui/DesmosBezierRenderer
 3. `sudo apt update`
 4. `sudo apt install git python3-dev python3-pip build-essential libagg-dev libpotrace-dev pkg-config`
 5. `pip install -r requirements.txt`
-6. `jupyter notebook` and run scripts
 
 ### Mac
 1. Git clone this repository
@@ -25,7 +22,7 @@ kevinjycui for https://github.com/kevinjycui/DesmosBezierRenderer
 
 ## Features
 ### Photo to Graph
-This feature can be achieved by `DrawImage.ipynb`
+This feature can be achieved by `./ipynb_version/DrawImage.ipynb` or `./python_version/draw_image.py`
 
 *My profile image converted*
 
@@ -33,7 +30,7 @@ This feature can be achieved by `DrawImage.ipynb`
 
 
 ### Video to Graphs
-This feature can be achieved by `ProcessVideo.ipynb`
+This feature can be achieved by `./ipynb_version/ProcessVideo.ipynb` or `./python_version/process_video.py`
 
 *Noot Noot Meme converted*
 
@@ -46,3 +43,4 @@ https://user-images.githubusercontent.com/49092508/178396814-b96c4db0-2a02-4ac2-
 3. Use `matplotlib.pyplot` to draw Bezier curves using some features.
 4. Save those `pyplot`s into images. 
 5. Use [ffmpeg](https://ffmpeg.org) to turn those images into video.
+
