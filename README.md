@@ -7,12 +7,21 @@ A simple script that draws picture into `matplotlib.pyplot` using bezier curves.
 kevinjycui for https://github.com/kevinjycui/DesmosBezierRenderer
 
 ## Installation
+### Linux
 1. Git clone this repository
-2. `pip install -r requirements.txt`
-3. `sudo apt-get install ffmpeg`
-4. `sudo apt update`
-5. `sudo apt install git python3-dev python3-pip build-essential libagg-dev libpotrace-dev pkg-config`
+2. `sudo apt-get install ffmpeg`
+3. `sudo apt update`
+4. `sudo apt install git python3-dev python3-pip build-essential libagg-dev libpotrace-dev pkg-config`
+5. `pip install -r requirements.txt`
 6. `jupyter notebook` and run scripts
+
+### Mac
+1. Git clone this repository
+2. `brew install ffmpeg` (or `brew` like manager)
+3. `brew install potrace`
+4. `brew install pkg-config`
+5. `brew install libagg`
+6. `pip install -r requirements.txt`
 
 ## Features
 ### Photo to Graph
