@@ -1,9 +1,18 @@
 
+
 # PltPics
 A simple script that draws picture into `matplotlib.pyplot` using bezier curves.
 
 ## Special Thanks To
 kevinjycui for https://github.com/kevinjycui/DesmosBezierRenderer
+
+## Installation
+1. Git clone this repository
+2. `pip install -r requirements.txt`
+3. `sudo apt-get install ffmpeg`
+4. `sudo apt update`
+5. `sudo apt install git python3-dev python3-pip build-essential libagg-dev libpotrace-dev pkg-config`
+6. `jupyter notebook` and run scripts
 
 ## Features
 ### Photo to Graph
