@@ -7,10 +7,6 @@ from PIL import Image
 
 import generate_beizer_curve
 
-FIGSIZE_X = 20
-FIGSIZE_Y = 20
-DPI = 80
-
 
 def calculate_fig_size(file_name, multiplier):
     """
@@ -23,11 +19,10 @@ def calculate_fig_size(file_name, multiplier):
     """
     im = Image.open(file_name)  # open image using PIL
     width, height = im.size  # get width and height
-    global FIGSIZE_X
-    global FIGSIZE_Y
     width_ratio = float(width) / height  # calculate aspect ratio
     FIGSIZE_X = multiplier * width_ratio  # set multiplier with the ratio
     FIGSIZE_Y = multiplier * 1
+    plt.rcParams['figure.figsize'] = (FIGSIZE_X, FIGSIZE_Y)
 
 
 def process_frame(tmp_dir, curves, frame_name, color):
@@ -177,7 +172,7 @@ def generate_pictures(tmp_dir, frame_dir, bilateral_filter, l2_gradient,
         process_frame(tmp_dir, curves, i, color)
 
 
-def generate_video(video_name, tmp_dir, frame_dir, clean_up=True,
+def generate_video(video_name, fixed_figsize="(10,10)", clean_up=True,
                    flag_calculate_fig_size=True, multiplier=10,
                    thread_enabled=False, thread_count=4, color="#2464b4",
                    bilateral_filter=False, l2_gradient=False,
@@ -185,8 +180,7 @@ def generate_video(video_name, tmp_dir, frame_dir, clean_up=True,
     """
     A function that generates plot video out of a video using plt.
     :param video_name: string that represents video's name
-    :param tmp_dir: the temporary directory to store frame pictures into
-    :param frame_dir: the directory to save frames into
+    :param fixed_figsize: a tuple that sets fixed figsize
     :param clean_up: whether or not to clean up tmp_dir and frame_dir
     :param flag_calculate_fig_size: whether or not to automatically calculate
                                     ratio and set figsize.
@@ -202,6 +196,8 @@ def generate_video(video_name, tmp_dir, frame_dir, clean_up=True,
                         L2 gradient for generating beizer curves.
     :param output: a string that represent output file's name
     """
+    tmp_dir = os.path.join(os.getcwd(), "tmp_pics")
+    frame_dir = os.path.join(os.getcwd(), "frames")
 
     try:  # try making tmp_dir and frame_dir
         os.mkdir(tmp_dir)
@@ -216,12 +212,16 @@ def generate_video(video_name, tmp_dir, frame_dir, clean_up=True,
     print("-----=[ Settings ]=-----")
     print("[+] Clean up set : " + str(clean_up))
     print("[+] Auto calculate figsize : " + str(flag_calculate_fig_size))
-    print("[+] Figsize multiplier : " + str(multiplier))
-    print("[+] Multithread : " + str(thread_enabled))
+    if flag_calculate_fig_size:
+        print("[+] Figsize multiplier : " + str(multiplier))
+        print("[+] Multithread : " + str(thread_enabled))
+    else:
+        fixed_figsize = eval(fixed_figsize)
+        print("[+] Figsize : " + str(fixed_figsize))
     if thread_enabled:
         print("[+] Thread count : " + str(thread_count))
 
-    print("[+] Color : " + color)
+    print("[+] Line color : " + color)
     print("[+] Bilateral Filter : " + str(bilateral_filter))
     print("[+] Use L2 Gradient : " + str(l2_gradient))
     print("[+] Output : " + output)
@@ -231,10 +231,10 @@ def generate_video(video_name, tmp_dir, frame_dir, clean_up=True,
     extract_frames(video_name, frame_dir)
     print("[+] Extracting frames done!")
 
-    if calculate_fig_size:
+    if flag_calculate_fig_size:  # if automatically set figsize
         calculate_fig_size(frame_dir + "/frame" + "%03d.png" % 1, multiplier)
-
-    plt.rcParams['figure.figsize'] = (FIGSIZE_X, FIGSIZE_Y)
+    else:  # if mannually set figsize
+        plt.rcParams['figure.figsize'] = (fixed_figsize[0], fixed_figsize[1])
 
     print("[+] Processing frames...\n")
     if thread_enabled:
@@ -258,9 +258,6 @@ def generate_video(video_name, tmp_dir, frame_dir, clean_up=True,
 
 
 if __name__ == "__main__":
-    tmp_dir = os.path.join(os.getcwd(), "tmp_pics")
-    frame_dir = os.path.join(os.getcwd(), "frames")
-    print(frame_dir)
-    generate_video("./nootnoot.mp4", tmp_dir, frame_dir, clean_up=False,
+    generate_video(video_name="./nootnoot.mp4", clean_up=False,
                    multiplier=10, thread_enabled=False, thread_count=0,
                    color="#000000", output="out.mp4")

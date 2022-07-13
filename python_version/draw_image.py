@@ -7,9 +7,6 @@ from PIL import Image
 
 import generate_beizer_curve
 
-FIGSIZE_X = 20
-FIGSIZE_Y = 20
-
 
 def calculate_fig_size(file_name, multiplier):
     """
@@ -22,16 +19,15 @@ def calculate_fig_size(file_name, multiplier):
     """
     im = Image.open(file_name)  # open image using PIL
     width, height = im.size  # get width and height
-    global FIGSIZE_X
-    global FIGSIZE_Y
     width_ratio = float(width) / height  # calculate aspect ratio
     FIGSIZE_X = multiplier * width_ratio  # set multiplier with the ratio
     FIGSIZE_Y = multiplier * 1
+    plt.rcParams['figure.figsize'] = (FIGSIZE_X, FIGSIZE_Y)
 
 
-def generate_picture(file_name, flag_calculate_fig_size=True, multiplier=10,
-                     color='#2464b4', bilateral_filter=False,
-                     l2_gradient=False, save=False, output="output.png"):
+def generate_picture(file_name, output: str, flag_calculate_fig_size=True,
+                     multiplier=10, color='#2464b4', bilateral_filter=False,
+                     l2_gradient=False, save=False, fixed_figsize="(10,10)"):
     """
     A simple function that generates images using matplotlib and beizer curves
     :param file_name: the name of image file to generate.
@@ -48,10 +44,26 @@ def generate_picture(file_name, flag_calculate_fig_size=True, multiplier=10,
     :param save: a boolean that decides whether or not to save the image.
     :param output: a string that represents output file's name.
     """
+    print("-----=[ Settings ]=-----")
+    print("[+] Auto calculate figsize : " + str(flag_calculate_fig_size))
+    print("[+] Line color : " + color)
+    if flag_calculate_fig_size:
+        print("[+] Figsize multiplier : " + str(multiplier))
+    else:
+        fixed_figsize = eval(fixed_figsize)
+        print("[+] Figsize : " + str(fixed_figsize))
+    print("[+] Bilateral Filter : " + str(bilateral_filter))
+    print("[+] Use L2 Gradient : " + str(l2_gradient))
+    print("[+] Output : " + output)
+
+    print("-----=[ Job Started]=-----")
+
     curves = generate_beizer_curve.get_curve(file_name,
                                              bilateral_filter, l2_gradient)
-    calculate_fig_size(file_name, multiplier)
-    plt.rcParams['figure.figsize'] = (FIGSIZE_X, FIGSIZE_Y)
+    if flag_calculate_fig_size:
+        calculate_fig_size(file_name, multiplier)
+    else:
+        plt.rcParams['figure.figsize'] = (fixed_figsize[0], fixed_figsize[1])
 
     Path = mpath.Path  # use mpath for drawing bezier curve
     fig, ax = plt.subplots()
