@@ -56,14 +56,15 @@ def process_frame(tmp_dir, curves, frame_name, color):
         plt.close(fig)  # close fig since we do not want it to be seen
 
 
-def extract_frames(video_name, frame_dir):
+def extract_frames_and_audio(video_name, frame_dir):
     """
-    A function that extracts video frames into frame directory
+    A function that extracts video frames and audio.
     :param video_name: a string that represents video's name
     :param frame_dir: the directory to save frames into
     """
     # extract frames using ffmpeg
     os.system("ffmpeg -i " + video_name + " " + frame_dir + "/frame%03d.png")
+    os.system("ffmpeg -i " + video_name + " -vn -acodec copy audio.aac")
 
 
 """
@@ -228,7 +229,7 @@ def generate_video(video_name, fixed_figsize="(10,10)", clean_up=True,
 
     print("-----=[ Job Started]=-----")
     print("[+] Extracting frames...")
-    extract_frames(video_name, frame_dir)
+    extract_frames_and_audio(video_name, frame_dir)
     print("[+] Extracting frames done!")
 
     if flag_calculate_fig_size:  # if automatically set figsize
@@ -249,11 +250,13 @@ def generate_video(video_name, fixed_figsize="(10,10)", clean_up=True,
                           color=color)
     print("[+] Generating output.mp4...")
     os.system("ffmpeg -pattern_type glob -i " + tmp_dir +
-              "/\"*.png\" " + output + " -y")
+              "/\"*.png\" tmp_video.mp4 -y")
+    os.system("ffmpeg -i audio.aac -i tmp_video.mp4 " + output + " -y")
 
     if clean_up:
         os.system("rm -rf " + tmp_dir)  # This is OS dependent!
         os.system("rm -rf " + frame_dir)
+        os.system("rm tmp_video.mp4")
         print("[+] Cleaned up directories")
 
 

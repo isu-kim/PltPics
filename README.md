@@ -20,21 +20,30 @@ kevinjycui for https://github.com/kevinjycui/DesmosBezierRenderer
 5. `brew install libagg`
 6. `pip install -r requirements.txt`
 
+## Using Program
+### `ipynb_version`
+1. Visit directory `ipynb_version`
+2. `jupyter notebook`
+3. `./ipynb_version/DrawImage.ipynb` is for drawing images.
+4. `./ipynb_version/ProcessVideo.ipynb` is for processing videos.
+
+### `python_version`
+1. Visit directory `python_version`
+2. `python run_me.py`
+3. For arguments, please check [here](https://github.com/gooday2die/PltPics/tree/main/python_version)
+
+
 ## Features
 ### Photo to Graph
-This feature can be achieved by `./ipynb_version/DrawImage.ipynb` or `./python_version/draw_image.py`
-
 *My profile image converted*
 
 ![New Project](https://user-images.githubusercontent.com/49092508/178396834-84758ad6-c4c0-4cba-b49a-e800c6bc23e8.png)
 
 
 ### Video to Graphs
-This feature can be achieved by `./ipynb_version/ProcessVideo.ipynb` or `./python_version/process_video.py`
-
 *Noot Noot Meme converted*
 
-https://user-images.githubusercontent.com/49092508/178396814-b96c4db0-2a02-4ac2-bd77-f50044d49a21.mp4
+https://user-images.githubusercontent.com/49092508/178650966-927320a6-060f-4e28-b119-0f61f53dd966.mp4
 
 ## How is this possible?
 1. Extract frames of video by [ffmpeg](https://ffmpeg.org)
@@ -43,4 +52,5 @@ https://user-images.githubusercontent.com/49092508/178396814-b96c4db0-2a02-4ac2-
 3. Use `matplotlib.pyplot` to draw Bezier curves using some features.
 4. Save those `pyplot`s into images. 
 5. Use [ffmpeg](https://ffmpeg.org) to turn those images into video.
+
 
