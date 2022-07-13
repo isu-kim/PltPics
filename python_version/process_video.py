@@ -3,12 +3,10 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import os
 import threading
-from pathlib import Path
 from PIL import Image
 
 import generate_beizer_curve
 
-COLOUR = '#2464b4'  # Hex value of colour for graph output
 FIGSIZE_X = 20
 FIGSIZE_Y = 20
 DPI = 80
@@ -23,39 +21,33 @@ def calculate_fig_size(file_name, multiplier):
                        (if width:height ratio was 2:1 and multiplier was 10,
                        figsize will be 20, 10)
     """
-    im = Image.open(file_name)
-    width, height = im.size
+    im = Image.open(file_name)  # open image using PIL
+    width, height = im.size  # get width and height
     global FIGSIZE_X
     global FIGSIZE_Y
-    width_ratio = float(width) / height
-    FIGSIZE_X = multiplier * width_ratio
+    width_ratio = float(width) / height  # calculate aspect ratio
+    FIGSIZE_X = multiplier * width_ratio  # set multiplier with the ratio
     FIGSIZE_Y = multiplier * 1
 
 
-def set_fig_size():
-    """
-    A function that sets figsize using pylab
-    """
-    plt.rcParams['figure.figsize'] = (FIGSIZE_X, FIGSIZE_Y)
-
-
-def process_frame(tmp_dir, curves, frame_name):
+def process_frame(tmp_dir, curves, frame_name, color):
     """
     A function that generates a pyplot using the bezier curves.
     This function will generate pyplot and save it to tmp_dir
     :param tmp_dir: the temporary directory to store frame pictures into
     :param curves: the paths oof beizer curves
     :param frame_count: the current frame's name to save picture into.
+    :param color: a string that represents hex color of each lines
     """
-    Path = mpath.Path  # use mpath for drawing bezier curve
     fig, ax = plt.subplots()
+    Path = mpath.Path
     plt.title("Frame : " + str(frame_name))  # show title as frames
     plt.ioff()  # do not show plt
-    for curve in curves:
+    for curve in curves:  # for all beizer curves, draw it using mpatches
         pp = mpatches.PathPatch(
             Path(curve,
                  [Path.MOVETO, Path.CURVE3, Path.CURVE3, Path.CLOSEPOLY]),
-            fc="none", transform=ax.transData, color=COLOUR)
+            fc="none", transform=ax.transData, color=color)
         ax.add_patch(pp)  # draw all curves and add_patch to ax.
         ax.plot([0], [0])
     # use %03d since we are using ffmpeg
@@ -65,7 +57,7 @@ def process_frame(tmp_dir, curves, frame_name):
         plt.close(fig)  # close fig since we do not want it to be seen
     except FileNotFoundError:  # generate tmp_directory for saving pictures
         os.mkdir(tmp_dir)
-        plt.savefig(save_file_name)
+        plt.savefig(save_file_name)  # save file
         plt.close(fig)  # close fig since we do not want it to be seen
 
 
@@ -100,37 +92,58 @@ def t_generate_pictures_segment(**kwargs):
     :param tmp_dir: the temporary directory to store frame pictures into
     :param frame_dir: the directory to save frames into
     :param files: the list that includes file's names
+    :param color: a string that represents hex color value of each lines
+    :param bilateral_filter: a boolean that decides whether or not to use
+                             bilateral filter for generating beizer curves.
+    :param l2_gradient: a boolean that decides whether or not to use
+                        L2 gradient for generating beizer curves.
     """
     tmp_dir = kwargs['tmp_dir']
     frame_dir = kwargs['frame_dir']
     files = kwargs['files']
-    for file in files:
-        file = file.decode('utf-8').replace(".png", "")
-        file = file.replace("frame", "")
-        print("[+] Processing frame : " + file)
-        cur_file = os.path.join(frame_dir, file)
-        curves = generate_beizer_curve.get_curve(cur_file)
-        process_frame(tmp_dir, curves, file)
+    color = kwargs['color']
+    print(color)
+    bilateral_filter = kwargs['bilateral_filter']
+    l2_gradient = kwargs['l2_gradient']
+
+    for file_name in files:  # for all files, process frame
+        file_name = file_name.decode('utf-8').replace(".png", "")
+        file_name = file_name.replace("frame", "")
+        print("[+] Processing frame : " + file_name)
+        cur_file = os.path.join(frame_dir, file_name)
+        curves = generate_beizer_curve.get_curve(cur_file, bilateral_filter,
+                                                 l2_gradient)
+        process_frame(tmp_dir, curves, file_name, color)
 
 
-def t_generate_pictures(tmp_dir, frame_dir, thread_count):
+def t_generate_pictures(tmp_dir, frame_dir, thread_count,
+                        bilateral_filter, l2_gradient, color):
     """
     A function that generates pictures using multiple threads
     :param tmp_dir: the temporary directory to store frame pictures into
     :param frame_dir: the directory to save frames into
     :param thread_count: the count of threads to generate
+    :param color: a string that represents hex color value of each lines
+    :param bilateral_filter: a boolean that decides whether or not to use
+                             bilateral filter for generating beizer curves.
+    :param l2_gradient: a boolean that decides whether or not to use
+                        L2 gradient for generating beizer curves.
     """
     print("[+] Using " + str(thread_count) + " threads...")
     directory = os.fsencode(frame_dir)
 
     thread_list = list()
+    # split files using split function
     file_list = list(split(os.listdir(directory), thread_count))
 
     for files in file_list:
         t = threading.Thread(target=t_generate_pictures_segment,
                              kwargs={'tmp_dir': tmp_dir,
                                      'frame_dir': frame_dir,
-                                     'files': files})
+                                     'files': files,
+                                     'color': color,
+                                     'bilateral_filter': bilateral_filter,
+                                     'l2_gradient': l2_gradient})
         thread_list.append(t)
     for t in thread_list:
         t.start()
@@ -139,27 +152,36 @@ def t_generate_pictures(tmp_dir, frame_dir, thread_count):
         t.join()
 
 
-def generate_pictures(tmp_dir, frame_dir):
+def generate_pictures(tmp_dir, frame_dir, bilateral_filter, l2_gradient,
+                      color):
     """
     A function that generate pictures using process_frames and generates
     images using plt.
     :param tmp_dir: the temporary directory to store frame pictures into
     :param frame_dir: the directory to save frames into
+    :param color: a string that represents hex color value of each lines
+    :param bilateral_filter: a boolean that decides whether or not to use
+                             bilateral filter for generating beizer curves.
+    :param l2_gradient: a boolean that decides whether or not to use
+                        L2 gradient for generating beizer curves.
     """
     directory = os.fsencode(frame_dir)
     files = os.listdir(directory)
     file_count = len(files)
 
-    for i in range(1, file_count, 1):
+    for i in range(1, file_count, 1):  # iterate over all frames
         print("[+] Processing frame : " + str(i) + " / " + str(file_count))
         cur_file = os.path.join(frame_dir + "/" + "frame%03d.png" % i)
-        curves = generate_beizer_curve.get_curve(cur_file)
-        process_frame(tmp_dir, curves, i)
+        curves = generate_beizer_curve.get_curve(cur_file, bilateral_filter,
+                                                 l2_gradient)
+        process_frame(tmp_dir, curves, i, color)
 
 
 def generate_video(video_name, tmp_dir, frame_dir, clean_up=True,
                    flag_calculate_fig_size=True, multiplier=10,
-                   thread_enabled=False, thread_count=4):
+                   thread_enabled=False, thread_count=4, color="#2464b4",
+                   bilateral_filter=False, l2_gradient=False,
+                   output="output.mp4"):
     """
     A function that generates plot video out of a video using plt.
     :param video_name: string that represents video's name
@@ -173,6 +195,12 @@ def generate_video(video_name, tmp_dir, frame_dir, clean_up=True,
                        figsize will be 20, 10)
     :param thread_enabled: whether or not to use multiple threads
     :param thread_count: the count of threads to generate
+    :param color: a string that represents hex color value of each lines
+    :param bilateral_filter: a boolean that decides whether or not to use
+                             bilateral filter for generating beizer curves.
+    :param l2_gradient: a boolean that decides whether or not to use
+                        L2 gradient for generating beizer curves.
+    :param output: a string that represent output file's name
     """
 
     try:  # try making tmp_dir and frame_dir
@@ -185,6 +213,20 @@ def generate_video(video_name, tmp_dir, frame_dir, clean_up=True,
     except FileExistsError:
         pass
 
+    print("-----=[ Settings ]=-----")
+    print("[+] Clean up set : " + str(clean_up))
+    print("[+] Auto calculate figsize : " + str(flag_calculate_fig_size))
+    print("[+] Figsize multiplier : " + str(multiplier))
+    print("[+] Multithread : " + str(thread_enabled))
+    if thread_enabled:
+        print("[+] Thread count : " + str(thread_count))
+
+    print("[+] Color : " + color)
+    print("[+] Bilateral Filter : " + str(bilateral_filter))
+    print("[+] Use L2 Gradient : " + str(l2_gradient))
+    print("[+] Output : " + output)
+
+    print("-----=[ Job Started]=-----")
     print("[+] Extracting frames...")
     extract_frames(video_name, frame_dir)
     print("[+] Extracting frames done!")
@@ -192,16 +234,22 @@ def generate_video(video_name, tmp_dir, frame_dir, clean_up=True,
     if calculate_fig_size:
         calculate_fig_size(frame_dir + "/frame" + "%03d.png" % 1, multiplier)
 
-    set_fig_size()
+    plt.rcParams['figure.figsize'] = (FIGSIZE_X, FIGSIZE_Y)
 
     print("[+] Processing frames...\n")
     if thread_enabled:
-        t_generate_pictures(tmp_dir, frame_dir, thread_count)
+        t_generate_pictures(tmp_dir=tmp_dir, frame_dir=frame_dir,
+                            thread_count=thread_count, color=color,
+                            bilateral_filter=bilateral_filter,
+                            l2_gradient=l2_gradient)
     else:
-        generate_pictures(tmp_dir, frame_dir)
+        generate_pictures(tmp_dir=tmp_dir, frame_dir=frame_dir,
+                          bilateral_filter=bilateral_filter,
+                          l2_gradient=l2_gradient,
+                          color=color)
     print("[+] Generating output.mp4...")
     os.system("ffmpeg -pattern_type glob -i " + tmp_dir +
-              "/\"*.png\" output.mp4 -y")
+              "/\"*.png\" " + output + " -y")
 
     if clean_up:
         os.system("rm -rf " + tmp_dir)  # This is OS dependent!
@@ -214,4 +262,5 @@ if __name__ == "__main__":
     frame_dir = os.path.join(os.getcwd(), "frames")
     print(frame_dir)
     generate_video("./nootnoot.mp4", tmp_dir, frame_dir, clean_up=False,
-                   multiplier=10, thread_enabled=False, thread_count=0)
+                   multiplier=10, thread_enabled=False, thread_count=0,
+                   color="#000000", output="out.mp4")

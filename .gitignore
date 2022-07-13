@@ -2,4 +2,5 @@ frames/
 tmp_pics/
 .ipynb_checkpoints/
 Untitled.ipynb
-
+__pycache__/
+*.swp

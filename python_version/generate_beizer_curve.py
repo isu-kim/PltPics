@@ -1,5 +1,6 @@
 """
-The main code that turns image into bezier curves was from https://github.com/kevinjycui/DesmosBezierRenderer
+The main code that turns image into bezier curves was from
+https://github.com/kevinjycui/DesmosBezierRenderer
 Huge and special thanks to https://github.com/kevinjycui for this fun project.
 """
 
@@ -7,9 +8,6 @@ Huge and special thanks to https://github.com/kevinjycui for this fun project.
 import numpy as np
 import potrace
 import cv2
-
-BILATERAL_FILTER = False  # Reduce number of lines with bilateral filter
-USE_L2_GRADIENT = False  # Creates less edges but is still accurate (leads to faster renders)
 
 
 def get_trace(data):
@@ -20,7 +18,7 @@ def get_trace(data):
     return path
 
 
-def get_curve(filename):
+def get_curve(filename, bilateral_filter=False, l2_gradient=False):
     path = get_trace(get_contours(filename))
     curves_list = list()
     for curve in path.curves:
@@ -43,16 +41,16 @@ def get_curve(filename):
     return curves_list
 
 
-def get_contours(image, nudge=.33):
+def get_contours(image, nudge=.33, bilateral_filter=False, l2_gradient=False):
     img = cv2.imread(image)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-    if BILATERAL_FILTER:
+    if bilateral_filter:
         median = max(10, min(245, np.median(gray)))
         lower = int(max(0, (1 - nudge) * median))
         upper = int(min(255, (1 + nudge) * median))
         filtered = cv2.bilateralFilter(gray, 5, 50, 50)
-        edged = cv2.Canny(filtered, lower, upper, L2gradient=USE_L2_GRADIENT)
+        edged = cv2.Canny(filtered, lower, upper, L2gradient=l2_gradient)
     else:
         edged = cv2.Canny(gray, 30, 200)
 
