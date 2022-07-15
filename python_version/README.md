@@ -41,7 +41,7 @@ required arguments:
 
 ### Required Arguments
 - `--type TYPE` : The media type to convert, there are `video` and `image` options available. Example would be `--type video` (for videos).
-- ` -i INPUT, --input INPUT` : The input file to convert. Should be in the same directory as `run_me.py` (will be fixing this issue in the future)
+- ` -i INPUT, --input INPUT` : The input file to convert. 
 
 ### Optional Arguments
 - `-h, --help` : Prints out the help message
